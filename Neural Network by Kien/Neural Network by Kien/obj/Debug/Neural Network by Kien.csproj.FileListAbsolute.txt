@@ -1,0 +1,7 @@
+C:\Users\Admin\source\repos\Neural Network by Kien\Neural Network by Kien\bin\Debug\Neural Network by Kien.exe.config
+C:\Users\Admin\source\repos\Neural Network by Kien\Neural Network by Kien\bin\Debug\Neural Network by Kien.exe
+C:\Users\Admin\source\repos\Neural Network by Kien\Neural Network by Kien\bin\Debug\Neural Network by Kien.pdb
+C:\Users\Admin\source\repos\Neural Network by Kien\Neural Network by Kien\obj\Debug\Neural Network by Kien.csprojResolveAssemblyReference.cache
+C:\Users\Admin\source\repos\Neural Network by Kien\Neural Network by Kien\obj\Debug\Neural Network by Kien.csproj.CoreCompileInputs.cache
+C:\Users\Admin\source\repos\Neural Network by Kien\Neural Network by Kien\obj\Debug\Neural Network by Kien.exe
+C:\Users\Admin\source\repos\Neural Network by Kien\Neural Network by Kien\obj\Debug\Neural Network by Kien.pdb

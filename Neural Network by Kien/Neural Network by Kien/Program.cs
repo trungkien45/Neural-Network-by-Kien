@@ -14,7 +14,7 @@ namespace Neural_Network_by_Kien
             list.Add(1);
             list.Add(3);
             list.Add(1);
-            Network network = new Network(list, new Network.ActivationFuntionDelegate(x=>x));
+            Network network = new Network(list, new Network.ActivationFuntionDelegate(x=>x),0.1);
             network.Train(new double[] { 3 }, new double[] { 3 });
             network.Run(new double[] { 3 });
         }

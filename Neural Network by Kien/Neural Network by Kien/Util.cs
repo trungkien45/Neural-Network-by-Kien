@@ -23,5 +23,9 @@ namespace Neural_Network_by_Kien
         {
             return activationFuntion(x + delta) / (x + delta);
         }
+        public static double GetRandom(double MinValue, double MaxValue)
+        {
+            return Util.GetRandomD() * (MaxValue - MinValue) + MinValue;
+        }
     }
 }

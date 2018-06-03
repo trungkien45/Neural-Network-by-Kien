@@ -14,9 +14,21 @@ namespace Neural_Network_by_Kien
             list.Add(1);
             list.Add(3);
             list.Add(1);
-            Network network = new Network(list, new Network.ActivationFuntionDelegate(x=>x),0.1);
-            network.Train(new double[] { 3 }, new double[] { 3 });
-            network.Run(new double[] { 3 });
+            Network network = new Network(list, new Network.ActivationFuntionDelegate(x => 1 / (1 + Math.Exp(-x))), 0.1);
+            Random random = new Random();
+            for (int i = 0; i < 20000; i++)
+            {
+                if (random.Next() % 2 == 0)
+                    //n.Train(ins, ots);
+                    network.Train(new double[] { 0 }, new double[] { 0 });
+                else
+                    //nn.Train(ins1, ots1);
+                    network.Train(new double[] { 1 }, new double[] { 1 });
+            }
+
+            Console.WriteLine(network.Run(new double[] { 1 })[0]);
+            Console.WriteLine(network.Run(new double[] { 0 })[0]);
+            Console.ReadKey();
         }
     }
 }

@@ -10,7 +10,7 @@ namespace Neural_Network_by_Kien
     {
         private class Neuron
         {
-            private List<Dendrite> dendrites;
+            private readonly List<Dendrite> dendrites;
             private double _value = 0;
             public double Value
             {
@@ -21,8 +21,9 @@ namespace Neural_Network_by_Kien
             }
             public double delta
             {
-                get;set;
+                get; set;
             }
+            public double Bias { get; set; }
             public double Sum { get; set; }
             public List<Dendrite> Dendrites { get { return dendrites; } }
             public Dendrite this[int index]
@@ -33,32 +34,33 @@ namespace Neural_Network_by_Kien
                 }
             }
 
-            public Neuron(int nDendritesToAfter)
+            public Neuron(int nDendrites)
             {
                 dendrites = new List<Dendrite>();
-                for (int i = 0; i < nDendritesToAfter; i++)
+                for (int i = 0; i < nDendrites; i++)
                 {
                     Dendrites.Add(new Dendrite());
                 }
-
+                Bias = Util.GetRandom(0, 1);
             }
 
-            public Neuron(double v, int nDendritesToAfter = 0)
+            public Neuron(double v, int nDendrites = 0)
             {
                 dendrites = new List<Dendrite>();
-                for (int i = 0; i < nDendritesToAfter; i++)
+                for (int i = 0; i < nDendrites; i++)
                 {
                     Dendrites.Add(new Dendrite());
                 }
 
                 _value = v;
+                Bias = Util.GetRandom(0, 1);
             }
         }
 
         private class Layer
         {
             private List<Neuron> neurons;
-            public double Bias { get; private set; }
+            //public double Bias { get; private set; }
             public List<Neuron> Neurons { get { return neurons; } }
 
             public Neuron this[int index]
@@ -68,33 +70,24 @@ namespace Neural_Network_by_Kien
                     return Neurons[index];
                 }
             }
-            /// <summary>
-            /// Value for each neuron = 0
-            /// </summary>
-            /// <param name="nNeurons"></param>
-            /// <param name="nafter"></param>
-            public Layer(int nNeurons, int nafter, double bias)
+            public Layer(int nNeurons, int n)
             {
                 neurons = new List<Neuron>();
                 for (int i = 0; i < nNeurons; i++)
                 {
-                    Neurons.Add(new Neuron(nafter));
+                    Neurons.Add(new Neuron(n));
                 }
-                Bias = bias;
+                //Bias = bias;
             }
-            public Layer(double[] v, int nafter, double bias)
+            public Layer(double[] v, int n)
             {
                 neurons = new List<Neuron>();
                 for (int i = 0; i < v.Length; i++)
                 {
-                    Neurons.Add(new Neuron(v[i], nafter));
+                    Neurons.Add(new Neuron(v[i], n));
                 }
-                Bias = bias;
+                //Bias = bias;
 
-            }
-            private static double getRandom(double MinValue, double MaxValue)
-            {
-                return Util.GetRandomD() * (MaxValue - MinValue) + MinValue;
             }
         }
 
@@ -139,7 +132,7 @@ namespace Neural_Network_by_Kien
                 throw new IndexOutOfRangeException("The number of neurons in the last layer must be equal the number of output");
             }
             List<double> outputRUN = Run(input);
-            AdjustNetwork(outputRUN,output);    
+            AdjustNetwork(outputRUN, output);
         }
 
         private void AdjustNetwork(List<double> outputRUN, double[] output)
@@ -155,40 +148,43 @@ namespace Neural_Network_by_Kien
 
             }
             error /= 2;
-            double deltaoutnet = 0;
-            //Output Layer
-            for (int j = 0; j < layers[layers.Count - 1].Neurons.Count; j++)
+            ///////////////////////////////////////
+            for (int i = 0; i < Layers[Layers.Count - 1].Neurons.Count; i++)
             {
-                //calc delta
-                deltaoutnet = Util.GetDerivativeAtX(activationFuntion, layers[layers.Count - 1].Neurons[j].Sum);
-                layers[layers.Count - 1].Neurons[j].delta = deltaoutnet;
-                for (int i = 0; i < layers[layers.Count - 2].Neurons.Count; i++)
-                {
-                    double DeltaW = -LearnningRate * layers[layers.Count - 2].Neurons[i].Value * layers[layers.Count - 1].Neurons[j].delta;
-                    layers[layers.Count - 2].Neurons[i].Dendrites[j].Weight += DeltaW; 
-                }
+                Neuron neuron = Layers[Layers.Count - 1].Neurons[i];
+
+                neuron.delta = Util.GetDerivativeAtX(activationFuntion,neuron.Sum) * (output[i] - neuron.Value);
+
             }
-            for (int k = layers.Count-2; k > 1; k--)
+            for (int j = Layers.Count - 2; j >= 1; j--)
             {
-                for (int j = 0; j < layers[k].Neurons.Count; j++)
+                for (int k = 0; k < Layers[j].Neurons.Count; k++)
                 {
-                    double deltaL = 0;
-                    //calc delta at layerL
-                    for (int i = 0; i < Layers[k+1].Neurons.Count; i++)
+                    Neuron n = Layers[j].Neurons[k];
+                    n.delta = 0;
+
+                    for (int i = 0; i < Layers[j + 1].Neurons.Count; i++)
                     {
-                        deltaL += layers[k + 1].Neurons[i].delta*layers[k].Neurons[j].Dendrites[k+1].Weight;
-                    }
-                    deltaL *= Util.GetDerivativeAtX(activationFuntion, layers[k].Neurons[j].Sum);
-                    layers[k].Neurons[j].delta = deltaL;
-                    //update Weight
-                    for (int i = 0; i < layers[k-1].Neurons.Count; i++)
-                    {
-                        double DeltaW = -LearnningRate * layers[k-1].Neurons[i].Value * layers[k].Neurons[j].delta;
-                        layers[k-2].Neurons[j].Dendrites[i].Weight += DeltaW;
+
+                        n.delta += Util.GetDerivativeAtX(activationFuntion, n.Sum) *
+                                  Layers[j + 1].Neurons[i].Dendrites[k].Weight *
+                                  Layers[j + 1].Neurons[i].delta;
                     }
                 }
             }
-         }
+
+            for (int i = Layers.Count - 1; i >= 1; i--)
+            {
+                for (int j = 0; j < Layers[i].Neurons.Count; j++)
+                {
+                    Neuron n = Layers[i].Neurons[j];
+                    n.Bias = n.Bias + (LearnningRate * n.delta);
+
+                    for (int k = 0; k < n.Dendrites.Count; k++)
+                        n.Dendrites[k].Weight = n.Dendrites[k].Weight + (LearnningRate * Layers[i - 1].Neurons[k].Value * n.delta);
+                }
+            }
+        }
         public List<double> Run(double[] input)
         {
             List<double> result = new List<double>();
@@ -202,19 +198,21 @@ namespace Neural_Network_by_Kien
                 layers[0].Neurons[i].Value = input[i];
             }
 
-            for (int k = 0; k < Layers.Count - 1; k++)
+            for (int k = 1; k < Layers.Count; k++)
             {
-                Layer layerbefore = layers[k];
-                Layer layerafter = layers[k + 1];
-                for (int j = 0; j < layerafter.Neurons.Count; j++)
+                Layer layer = layers[k];
+                Layer layerbefore = layers[k - 1];
+                for (int i = 0; i < layer.Neurons.Count; i++)
                 {
-                    for (int i = 0; i < layerbefore.Neurons.Count; i++)
+                    Neuron neuron = layer[i];
+                    for (int j = 0; j < layerbefore.Neurons.Count; j++)
                     {
-                        layerafter.Neurons[j].Value += layerbefore.Neurons[i].Value * layerbefore.Neurons[i].Dendrites[j].Weight;
+
+                        neuron.Value += neuron.Value * neuron.Dendrites[j].Weight;
                     }
                     //adjust by activation Funtion
-                    layerafter.Neurons[j].Sum = layerafter.Neurons[j].Value;
-                    layerafter.Neurons[j].Value = ActivationFuntion(layerafter.Neurons[j].Sum + layerafter.Bias);
+                    neuron.Sum = neuron.Value;
+                    neuron.Value = ActivationFuntion(neuron.Sum + neuron.Bias);
                 }
             }
             Layer layerOutput = Layers[Layers.Count - 1];
@@ -229,15 +227,15 @@ namespace Neural_Network_by_Kien
         {
             this.activationFuntion = activationFuntion;
             layers = new List<Layer>();
-            this.LearnningRate = learningrate;
+            LearnningRate = learningrate;
             for (int i = 0; i < nNeuronsInLayers.Count; i++)
             {
                 if (nNeuronsInLayers[i] < 1)
                     throw new IndexOutOfRangeException("The number of neurons in a layer must be greater than 0");
-                int nafter = 0;
-                if (i != nNeuronsInLayers.Count - 1)
-                    nafter = nNeuronsInLayers[i + 1];
-                Layer layer = new Layer(nNeuronsInLayers[i], nafter, Util.GetRandom(0.00000001, 1.0));
+                int nbefore = 0;
+                if (i > 0)
+                    nbefore = nNeuronsInLayers[i - 1];
+                Layer layer = new Layer(nNeuronsInLayers[i], nbefore);
                 layers.Add(layer);
             }
         }
